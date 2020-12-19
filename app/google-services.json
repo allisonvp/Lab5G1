@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "362845003835",
+    "firebase_url": "https://lab5g1apps-default-rtdb.firebaseio.com",
+    "project_id": "lab5g1apps",
+    "storage_bucket": "lab5g1apps.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362845003835:android:22532111d23e432c4cfc1e",
+        "android_client_info": {
+          "package_name": "pe.pucp.tel306.firebox"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362845003835-jrj0a97pv44vtji368pq01u41imjnjaq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pe.pucp.tel306.firebox",
+            "certificate_hash": "c89b65191ece67c9ed49c6d43907c30113705e54"
+          }
+        },
+        {
+          "client_id": "362845003835-cakaf7vut4dk28ug1evggr0dfh8cal7t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ0fMCg-DKFYAQUD2xMANavmT07OYh3tA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362845003835-cakaf7vut4dk28ug1evggr0dfh8cal7t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
