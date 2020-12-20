@@ -3,8 +3,12 @@ package pe.pucp.tel306.firebox;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -152,6 +156,18 @@ public class FilesActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (requestCode == 2) {
+                selectFile();
+            }
+        }
+    }
+
     public String getFileName(Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
@@ -175,6 +191,7 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     public void subirArchivo(Uri uri) {
+
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -189,7 +206,7 @@ public class FilesActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(FilesActivity.this, "Archivo subido exitosamente" , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FilesActivity.this, "Archivo subido exitosamente", Toast.LENGTH_SHORT).show();
                     Log.d("debugeo", "subida exitosa");
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -218,6 +235,7 @@ public class FilesActivity extends AppCompatActivity {
                 }
             });
         }
+
     }
 
     @Override
@@ -248,10 +266,18 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     public void selectFile() {
-        Intent intent = new Intent();
-        intent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
-        Log.d("debugeo", "ABIERTO");
-        startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), 1);
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent();
+            intent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+            Log.d("debugeo", "ABIERTO");
+            startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), 1);
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 2);
+        }
     }
 }
