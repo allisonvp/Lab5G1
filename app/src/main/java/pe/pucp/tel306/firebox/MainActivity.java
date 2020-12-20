@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         validacionUsuario();
     }
 
-    public void login (View view) {
+    public void login(View view) {
         List<AuthUI.IdpConfig> proveedores = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build(),
                 new AuthUI.IdpConfig.GoogleBuilder().build()
@@ -42,14 +42,14 @@ public class MainActivity extends AppCompatActivity {
                 .createSignInIntentBuilder()
                 .setAvailableProviders(proveedores)
                 .build();
-        startActivityForResult(intent,1);
+        startActivityForResult(intent, 1);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == 1) {
+        if (requestCode == 1 && resultCode == RESULT_OK) {
             validacionUsuario();
         }
     }
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 currentUser.sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        Log.d("infoApp", "Correo Enviado");
+                        Log.d("debugeo", "Correo Enviado");
                     }
                 });
 
