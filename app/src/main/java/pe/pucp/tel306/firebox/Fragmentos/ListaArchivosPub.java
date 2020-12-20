@@ -1,4 +1,4 @@
-package pe.pucp.tel306.firebox.config;
+package pe.pucp.tel306.firebox.Fragmentos;
 
 import android.os.Bundle;
 

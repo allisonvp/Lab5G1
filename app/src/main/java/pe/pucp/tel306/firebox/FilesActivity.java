@@ -43,6 +43,9 @@ public class FilesActivity extends AppCompatActivity {
     TextView addFileActionText, addPrivateActionText;
     // to check whether sub FAB buttons are visible or not.
     Boolean isAllFabsVisible;
+    private static final int FILE_UPLOAD = 1;
+    private static final int FILE_PRIVATE_UPLOAD = 2;
+    private static final int FILE_PERMISSION = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,14 +65,19 @@ public class FilesActivity extends AppCompatActivity {
             TextView textViewBienvenido = findViewById(R.id.textViewBienvenido);
             textViewBienvenido.setText("Bienvenido " + displayName);
         }
-        setFloatingButton();
+        openfilesFragment();
 
+        setFloatingButton();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.files_menu, menu);
         return true;
+    }
+
+    public void openfilesFragment() {
+
     }
 
     public void logout(MenuItem menuitem) {
@@ -131,7 +139,9 @@ public class FilesActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        selectFile();
+
+                        selectFile(FILE_UPLOAD);
+
                     }
                 });
 
@@ -140,7 +150,9 @@ public class FilesActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        selectFile();
+
+                        selectFile(FILE_PRIVATE_UPLOAD);
+
                     }
                 });
     }
@@ -151,8 +163,17 @@ public class FilesActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            subirArchivo(data.getData());
+
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case FILE_UPLOAD:
+                    subirArchivo(data.getData());
+                    break;
+                case FILE_PRIVATE_UPLOAD:
+                    subirArchivo(data.getData());
+                    break;
+
+            }
         }
     }
 
@@ -162,8 +183,8 @@ public class FilesActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         if (grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (requestCode == 2) {
-                selectFile();
+            if (requestCode % 10 == FILE_PERMISSION) {
+                selectFile((requestCode - FILE_PERMISSION) / 10);
             }
         }
     }
@@ -265,7 +286,7 @@ public class FilesActivity extends AppCompatActivity {
         }
     }
 
-    public void selectFile() {
+    public void selectFile(int code) {
         int permission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE);
 
@@ -274,10 +295,10 @@ public class FilesActivity extends AppCompatActivity {
             intent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
             intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
             Log.d("debugeo", "ABIERTO");
-            startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), 1);
+            startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), code);
         } else {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 2);
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, code * 10 + FILE_PERMISSION);
         }
     }
 }
