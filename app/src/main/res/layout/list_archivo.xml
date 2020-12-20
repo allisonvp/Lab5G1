@@ -40,8 +40,7 @@
                     android:layout_centerVertical="true"
                     android:layout_gravity="center"
                     android:paddingLeft="14dp"
-                    android:paddingRight="14dp"
-                    android:srcCompat=""></ImageView>
+                    android:paddingRight="14dp"></ImageView>
 
                 <LinearLayout
                     android:id="@+id/linearLayout"
