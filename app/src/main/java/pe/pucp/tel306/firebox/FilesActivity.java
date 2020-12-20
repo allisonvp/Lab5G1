@@ -1,20 +1,32 @@
 package pe.pucp.tel306.firebox;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.jaiselrahman.filepicker.activity.FilePickerActivity;
+import com.jaiselrahman.filepicker.config.Configurations;
 
 public class FilesActivity extends AppCompatActivity {
     // Make sure to use the FloatingActionButton
@@ -46,6 +58,7 @@ public class FilesActivity extends AppCompatActivity {
         setFloatingButton();
 
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.files_menu, menu);
@@ -62,7 +75,8 @@ public class FilesActivity extends AppCompatActivity {
             }
         });
     }
-    public void setFloatingButton(){
+
+    public void setFloatingButton() {
         // Register all the FABs with their IDs
         // This FAB button is the Parent
         mAddSto = findViewById(R.id.add_storage);
@@ -81,53 +95,31 @@ public class FilesActivity extends AppCompatActivity {
         addFileActionText.setVisibility(View.GONE);
         addPrivateActionText.setVisibility(View.GONE);
 
-        // make the boolean variable as false, as all the
-        // action name texts and all the sub FABs are invisible
         isAllFabsVisible = false;
 
-        // We will make all the FABs and action name texts
-        // visible only when Parent FAB button is clicked So
-        // we have to handle the Parent FAB button first, by
-        // using setOnClickListener you can see below
         mAddSto.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if (!isAllFabsVisible) {
-                            // when isAllFabsVisible becomes
-                            // true make all the action name
-                            // texts and FABs VISIBLE.
                             mAddFile.show();
                             mAddPrivate.show();
                             addFileActionText.setVisibility(View.VISIBLE);
                             addPrivateActionText.setVisibility(View.VISIBLE);
 
-                            // make the boolean variable true as
-                            // we have set the sub FABs
-                            // visibility to GONE
                             isAllFabsVisible = true;
                         } else {
 
-                            // when isAllFabsVisible becomes
-                            // true make all the action name
-                            // texts and FABs GONE.
                             mAddFile.hide();
                             mAddPrivate.hide();
                             addFileActionText.setVisibility(View.GONE);
                             addPrivateActionText.setVisibility(View.GONE);
 
-                            // make the boolean variable false
-                            // as we have set the sub FABs
-                            // visibility to GONE
                             isAllFabsVisible = false;
                         }
                     }
                 });
 
-        // below is the sample action to handle add person
-        // FAB. Here it shows simple Toast msg. The Toast
-        // will be shown only when they are visible and only
-        // when user clicks on them
         mAddFile.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -136,10 +128,7 @@ public class FilesActivity extends AppCompatActivity {
                     }
                 });
 
-        // below is the sample action to handle add alarm
-        // FAB. Here it shows simple Toast msg The Toast
-        // will be shown only when they are visible and only
-        // when user clicks on them
+
         mAddPrivate.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -149,4 +138,84 @@ public class FilesActivity extends AppCompatActivity {
                 });
     }
 
+    UploadTask task = null;
+    ProgressBar progressBar = null;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            subirArchivo(data.getData());
+        }
+
+    }
+
+    public void subirArchivo(Uri uri) {
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+        Log.d("debugeo", uri.getPath());
+
+        task = storageReference.child("archivo.jpg")
+                .putFile(uri);
+        task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Log.d("debugeo", "subida exitosa");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("debugeo", "error en la subida");
+                e.printStackTrace();
+            }
+        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+
+                long bytesTransferred = snapshot.getBytesTransferred();
+                long totalByteCount = snapshot.getTotalByteCount();
+
+                int progreso = (int) Math.round((100.0 * bytesTransferred) / totalByteCount);
+
+                Log.d("debugeo", "progreso: " + progreso + "%");
+
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (task != null) {
+            task.cancel();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (task != null && task.isInProgress()) {
+            task.pause();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (task != null && task.isPaused()) {
+            task.resume();
+        }
+    }
+
+    public void subirFile(View view) {
+        Intent intent = new Intent(this, FilePickerActivity.class);
+        intent.putExtra(FilePickerActivity.CONFIGS, new Configurations.Builder()
+                .setCheckPermission(true)
+                .setShowFiles(true)
+                .enableImageCapture(true)
+                .setMaxSelection(1)
+                .setSkipZeroSizeFiles(true)
+                .build());
+        startActivityForResult(intent, 1);
+    }
 }
