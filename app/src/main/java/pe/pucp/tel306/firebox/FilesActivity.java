@@ -28,15 +28,20 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import pe.pucp.tel306.firebox.Clases.Files;
+import pe.pucp.tel306.firebox.Clases.PrivateFiles;
+
 public class FilesActivity extends AppCompatActivity {
     // Make sure to use the FloatingActionButton
     // for all the FABs
-    FloatingActionButton mAddSto, mAddFile, mAddPrivate;
+    FloatingActionButton mAddSto, mAddFile;
 
     // These are taken to make visible and invisible along
     // with FABs
@@ -44,7 +49,6 @@ public class FilesActivity extends AppCompatActivity {
     // to check whether sub FAB buttons are visible or not.
     Boolean isAllFabsVisible;
     private static final int FILE_UPLOAD = 1;
-    private static final int FILE_PRIVATE_UPLOAD = 2;
     private static final int FILE_PERMISSION = 3;
 
     @Override
@@ -97,16 +101,13 @@ public class FilesActivity extends AppCompatActivity {
         mAddSto = findViewById(R.id.add_storage);
         // FAB button
         mAddFile = findViewById(R.id.add_file);
-        mAddPrivate = findViewById(R.id.add_private);
 
         // Also register the action name text, of all the FABs.
-        addFileActionText = findViewById(R.id.add_private_action_text);
         addPrivateActionText = findViewById(R.id.add_file_action_text);
 
         // Now set all the FABs and all the action name
         // texts as GONE
         mAddFile.setVisibility(View.GONE);
-        mAddPrivate.setVisibility(View.GONE);
         addFileActionText.setVisibility(View.GONE);
         addPrivateActionText.setVisibility(View.GONE);
 
@@ -118,7 +119,6 @@ public class FilesActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         if (!isAllFabsVisible) {
                             mAddFile.show();
-                            mAddPrivate.show();
                             addFileActionText.setVisibility(View.VISIBLE);
                             addPrivateActionText.setVisibility(View.VISIBLE);
 
@@ -126,7 +126,6 @@ public class FilesActivity extends AppCompatActivity {
                         } else {
 
                             mAddFile.hide();
-                            mAddPrivate.hide();
                             addFileActionText.setVisibility(View.GONE);
                             addPrivateActionText.setVisibility(View.GONE);
 
@@ -140,21 +139,12 @@ public class FilesActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
 
-                        selectFile(FILE_UPLOAD);
+                        selectFile();
 
                     }
                 });
 
 
-        mAddPrivate.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        selectFile(FILE_PRIVATE_UPLOAD);
-
-                    }
-                });
     }
 
     UploadTask task = null;
@@ -165,14 +155,8 @@ public class FilesActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case FILE_UPLOAD:
-                    subirArchivo(data.getData());
-                    break;
-                case FILE_PRIVATE_UPLOAD:
-                    subirArchivo(data.getData());
-                    break;
-
+            if (requestCode == FILE_UPLOAD) {
+                subirArchivo(data.getData());
             }
         }
     }
@@ -183,8 +167,8 @@ public class FilesActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         if (grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (requestCode % 10 == FILE_PERMISSION) {
-                selectFile((requestCode - FILE_PERMISSION) / 10);
+            if (requestCode == FILE_PERMISSION) {
+                selectFile();
             }
         }
     }
@@ -211,6 +195,25 @@ public class FilesActivity extends AppCompatActivity {
         return result;
     }
 
+    public long getFileSize(Uri uri) {
+        String fileSize = null;
+        Cursor cursor = getContentResolver()
+                .query(uri, null, null, null, null, null);
+        try {
+            if (cursor != null && cursor.moveToFirst()) {
+
+                // get file size
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (!cursor.isNull(sizeIndex)) {
+                    fileSize = cursor.getString(sizeIndex);
+                }
+            }
+        } finally {
+            cursor.close();
+        }
+        return Long.parseLong(fileSize);
+    }
+
     public void subirArchivo(Uri uri) {
 
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
@@ -229,6 +232,10 @@ public class FilesActivity extends AppCompatActivity {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(FilesActivity.this, "Archivo subido exitosamente", Toast.LENGTH_SHORT).show();
                     Log.d("debugeo", "subida exitosa");
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                    DocumentReference docRef = db.collection("users").document(currentUser.getUid()).collection("files").document(getFileName(uri));
+                    docRef.set(new Files(getFileSize(uri), currentUser.getUid() + "/" + getFileName(uri)));
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -286,7 +293,7 @@ public class FilesActivity extends AppCompatActivity {
         }
     }
 
-    public void selectFile(int code) {
+    public void selectFile() {
         int permission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE);
 
@@ -295,10 +302,10 @@ public class FilesActivity extends AppCompatActivity {
             intent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
             intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
             Log.d("debugeo", "ABIERTO");
-            startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), code);
+            startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), FILE_UPLOAD);
         } else {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, code * 10 + FILE_PERMISSION);
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, FILE_PERMISSION);
         }
     }
 }

@@ -18,7 +18,6 @@ public class ListaArchivosPub extends Fragment {
 
     public static ListaArchivosPub newInstance() {
         ListaArchivosPub fragment = new ListaArchivosPub();
-
         return fragment;
     }
 
