@@ -253,17 +253,6 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     public void selectFile() {
-//        Intent intent = new Intent(this, FilePickerActivity.class);
-//        intent.putExtra(FilePickerActivity.CONFIGS, new Configurations.Builder()
-//                .setCheckPermission(true)
-//                .setShowImages(false)
-//                .setShowVideos(false)
-//                .setShowFiles(true)
-//                .setSuffixes("pdf")
-//                .setSingleChoiceMode(true)
-//                .setSkipZeroSizeFiles(true)
-//                .build());
-//        startActivityForResult(intent, 1);
         Intent intent = new Intent();
         intent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
         intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
