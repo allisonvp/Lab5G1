@@ -5,8 +5,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +30,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.jaiselrahman.filepicker.activity.FilePickerActivity;
 import com.jaiselrahman.filepicker.config.Configurations;
+import com.jaiselrahman.filepicker.model.MediaFile;
+
+import java.util.ArrayList;
 
 public class FilesActivity extends AppCompatActivity {
     // Make sure to use the FloatingActionButton
@@ -43,6 +49,8 @@ public class FilesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_files);
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
 
         setTitle("Profile");
 
@@ -124,7 +132,7 @@ public class FilesActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(FilesActivity.this, "Archivo clickeado", Toast.LENGTH_SHORT).show();
+                        selectFile();
                     }
                 });
 
@@ -133,7 +141,7 @@ public class FilesActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(FilesActivity.this, "Archivo privado clickeado", Toast.LENGTH_SHORT).show();
+                        selectFile();
                     }
                 });
     }
@@ -144,49 +152,84 @@ public class FilesActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == 1 && resultCode == RESULT_OK) {
             subirArchivo(data.getData());
         }
+    }
 
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     public void subirArchivo(Uri uri) {
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        Log.d("debugeo", uri.getPath());
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            currentUser.reload();
+            String uid = currentUser.getUid();
+            progressBar.setProgress(0);
+            progressBar.setVisibility(View.VISIBLE);
+            task = storageReference.child(uid + "/" + getFileName(uri))
+                    .putFile(uri);
 
-        task = storageReference.child("archivo.jpg")
-                .putFile(uri);
-        task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Log.d("debugeo", "subida exitosa");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d("debugeo", "error en la subida");
-                e.printStackTrace();
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+            task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(FilesActivity.this, "Archivo subido exitosamente" , Toast.LENGTH_SHORT).show();
+                    Log.d("debugeo", "subida exitosa");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    progressBar.setVisibility(View.GONE);
+                    Log.d("debugeo", "error en la subida");
+                    e.printStackTrace();
+                }
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
 
-                long bytesTransferred = snapshot.getBytesTransferred();
-                long totalByteCount = snapshot.getTotalByteCount();
+                    long bytesTransferred = snapshot.getBytesTransferred();
+                    long totalByteCount = snapshot.getTotalByteCount();
 
-                int progreso = (int) Math.round((100.0 * bytesTransferred) / totalByteCount);
+                    int progreso = (int) Math.round((100.0 * bytesTransferred) / totalByteCount);
 
-                Log.d("debugeo", "progreso: " + progreso + "%");
+                    Log.d("debugeo", "progreso: " + progreso + "%");
 
-            }
-        });
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        progressBar.setProgress(progreso, true);
+                    } else {
+                        progressBar.setProgress(progreso);
+                    }
+                }
+            });
+        }
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         if (task != null) {
+            progressBar.setVisibility(View.GONE);
             task.cancel();
         }
     }
@@ -195,6 +238,7 @@ public class FilesActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (task != null && task.isInProgress()) {
+            progressBar.setVisibility(View.GONE);
             task.pause();
         }
     }
@@ -203,19 +247,27 @@ public class FilesActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (task != null && task.isPaused()) {
+            progressBar.setVisibility(View.VISIBLE);
             task.resume();
         }
     }
 
-    public void subirFile(View view) {
-        Intent intent = new Intent(this, FilePickerActivity.class);
-        intent.putExtra(FilePickerActivity.CONFIGS, new Configurations.Builder()
-                .setCheckPermission(true)
-                .setShowFiles(true)
-                .enableImageCapture(true)
-                .setMaxSelection(1)
-                .setSkipZeroSizeFiles(true)
-                .build());
-        startActivityForResult(intent, 1);
+    public void selectFile() {
+//        Intent intent = new Intent(this, FilePickerActivity.class);
+//        intent.putExtra(FilePickerActivity.CONFIGS, new Configurations.Builder()
+//                .setCheckPermission(true)
+//                .setShowImages(false)
+//                .setShowVideos(false)
+//                .setShowFiles(true)
+//                .setSuffixes("pdf")
+//                .setSingleChoiceMode(true)
+//                .setSkipZeroSizeFiles(true)
+//                .build());
+//        startActivityForResult(intent, 1);
+        Intent intent = new Intent();
+        intent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+        Log.d("debugeo", "ABIERTO");
+        startActivityForResult(Intent.createChooser(intent, "Seleccionar archivo"), 1);
     }
 }
