@@ -24,16 +24,89 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
+    <!--This will be the parent Floating Action Button-->
+    <!--After the implementation the Floating Action Button
+         at the bottom right corner-->
+    <!--After clicking the above button the following two buttons
+        will pop up. So this button is considered as parent FAB-->
+
     <Button
-        android:id="@+id/buttonLogout"
+        android:id="@+id/button_private"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="logout"
-        android:text="Logout"
+        android:text="Privados"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toEndOf="@+id/textViewBienvenido"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.023" />
+        app:layout_constraintVertical_bias="0.081" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_storage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/ic_upload"
+        app:fabSize="auto"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!--Floating action button for add alarm-->
+    <!--Make sure that you are constraining this
+        button to the parent button-->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_private"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:fabSize="auto"
+        app:layout_constraintBottom_toTopOf="@+id/add_storage"
+        app:layout_constraintEnd_toEndOf="@+id/add_storage"
+        app:layout_constraintStart_toStartOf="@+id/add_storage"
+        app:srcCompat="@drawable/ic_lock" />
+
+    <!--Action name text for the add alarm button-->
+    <!--Make sure that you are constraining this Text to
+        the add Alarm FAB button-->
+    <TextView
+        android:id="@+id/add_private_action_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Subir Archivo Privado"
+        app:layout_constraintBottom_toBottomOf="@+id/add_private"
+        app:layout_constraintEnd_toStartOf="@+id/add_private"
+        app:layout_constraintTop_toTopOf="@+id/add_private" />
+
+    <!--Floating action button for add person-->
+    <!--Make sure that you are constraining this
+        button to the add Alarm FAB button-->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:fabSize="auto"
+        app:layout_constraintBottom_toTopOf="@+id/add_private"
+        app:layout_constraintEnd_toEndOf="@+id/add_private"
+        app:layout_constraintStart_toStartOf="@+id/add_private"
+        app:srcCompat="@drawable/ic_file" />
+
+    <!--Action name text for the add person button-->
+    <!--Make sure that you are constraining this Text
+        to the add Person FAB button-->
+    <TextView
+        android:id="@+id/add_file_action_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Subir Archivo"
+        app:layout_constraintBottom_toBottomOf="@+id/add_file"
+        app:layout_constraintEnd_toStartOf="@+id/add_file"
+        app:layout_constraintTop_toTopOf="@+id/add_file" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
