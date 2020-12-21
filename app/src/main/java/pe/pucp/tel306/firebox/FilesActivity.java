@@ -2,9 +2,12 @@ package pe.pucp.tel306.firebox;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.content.Intent;
@@ -23,20 +26,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+
 import pe.pucp.tel306.firebox.Clases.Files;
 import pe.pucp.tel306.firebox.Clases.PrivateFiles;
+import pe.pucp.tel306.firebox.Fragmentos.ListaArchivosPub;
 
 public class FilesActivity extends AppCompatActivity {
     // Make sure to use the FloatingActionButton
@@ -45,7 +58,7 @@ public class FilesActivity extends AppCompatActivity {
 
     // These are taken to make visible and invisible along
     // with FABs
-    TextView addFileActionText, addPrivateActionText;
+    TextView addFileActionText;
     // to check whether sub FAB buttons are visible or not.
     Boolean isAllFabsVisible;
     private static final int FILE_UPLOAD = 1;
@@ -81,6 +94,37 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     public void openfilesFragment() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(currentUser.getUid()).collection("files")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Files> lista = new ArrayList<>();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Files file = document.toObject(Files.class);
+                                lista.add(file);
+                            }
+                            FragmentManager fm = getSupportFragmentManager();
+                            Fragment fragment = fm.findFragmentById(R.id.id_fragment_files);
+                            if (fragment != null) {
+                                fm.beginTransaction()
+                                        .remove(fragment)
+                                        .commit();
+                            }
+                            ListaArchivosPub listFragment = ListaArchivosPub.newInstance(lista, FilesActivity.this);
+                            getSupportFragmentManager().beginTransaction()
+                                    .add(R.id.id_fragment_files, listFragment)
+                                    .commit();
+
+                        } else {
+                            Log.d("debugeo", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
 
     }
 
@@ -103,13 +147,13 @@ public class FilesActivity extends AppCompatActivity {
         mAddFile = findViewById(R.id.add_file);
 
         // Also register the action name text, of all the FABs.
-        addPrivateActionText = findViewById(R.id.add_file_action_text);
+        addFileActionText = findViewById(R.id.add_file_action_text);
 
         // Now set all the FABs and all the action name
         // texts as GONE
         mAddFile.setVisibility(View.GONE);
         addFileActionText.setVisibility(View.GONE);
-        addPrivateActionText.setVisibility(View.GONE);
+
 
         isAllFabsVisible = false;
 
@@ -120,14 +164,12 @@ public class FilesActivity extends AppCompatActivity {
                         if (!isAllFabsVisible) {
                             mAddFile.show();
                             addFileActionText.setVisibility(View.VISIBLE);
-                            addPrivateActionText.setVisibility(View.VISIBLE);
 
                             isAllFabsVisible = true;
                         } else {
 
                             mAddFile.hide();
                             addFileActionText.setVisibility(View.GONE);
-                            addPrivateActionText.setVisibility(View.GONE);
 
                             isAllFabsVisible = false;
                         }
@@ -227,6 +269,7 @@ public class FilesActivity extends AppCompatActivity {
                     .putFile(uri);
 
             task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     progressBar.setVisibility(View.GONE);
@@ -235,7 +278,10 @@ public class FilesActivity extends AppCompatActivity {
                     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
                     DocumentReference docRef = db.collection("users").document(currentUser.getUid()).collection("files").document(getFileName(uri));
-                    docRef.set(new Files(getFileSize(uri), currentUser.getUid() + "/" + getFileName(uri)));
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                    LocalDateTime now = LocalDateTime.now();
+                    docRef.set(new Files(getFileName(uri), getFileSize(uri), currentUser.getUid() + "/" + getFileName(uri),dtf.format(now)));
+                    openfilesFragment();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

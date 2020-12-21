@@ -3,8 +3,8 @@ package pe.pucp.tel306.firebox.Clases;
 public class PrivateFiles extends Files {
     private String password;
 
-    public PrivateFiles(long size, String path, String password) {
-        super(size, path);
+    public PrivateFiles(String name, long size, String path, String date, String password) {
+        super(name, size, path, date);
         this.password = password;
     }
 

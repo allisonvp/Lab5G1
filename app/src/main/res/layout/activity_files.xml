@@ -91,24 +91,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <fragment
+    <LinearLayout
         android:id="@+id/id_fragment_files"
-        android:name="pe.pucp.tel306.firebox.Fragmentos.ListaArchivosPub"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="128dp"
-        android:visibility="gone"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <fragment
+    <LinearLayout
         android:id="@+id/id_fragment_privatefiles"
-        android:name="pe.pucp.tel306.firebox.Fragmentos.ListaArchivosPub"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_marginTop="128dp"
-        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
