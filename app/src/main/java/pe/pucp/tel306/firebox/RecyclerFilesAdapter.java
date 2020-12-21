@@ -54,19 +54,13 @@ public class RecyclerFilesAdapter extends RecyclerView.Adapter<RecyclerFilesAdap
         Glide.with(contexto)
                 .load(storageReference)
                 .into(holder.icon);
-//        holder.button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                ((QuestionActivity)contexto).checklogin();
-//                Toast.makeText(contexto, "Cargando...", Toast.LENGTH_SHORT).show();
-//                try {
-//                    checkAnswer(id);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        });
+        holder.button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    /////DIALOG
+
+            }
+        });
     }
 
 
