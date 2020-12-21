@@ -17,9 +17,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Arrays;
 import java.util.List;
+
+import pe.pucp.tel306.firebox.Clases.Users;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,15 +74,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (currentUser != null) {
             if (currentUser.isEmailVerified()) {
-                startActivity(new Intent(MainActivity.this, FilesActivity.class));
-                finish();
+                openFilesAct();
             } else {
                 currentUser.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (currentUser.isEmailVerified()) {
-                            startActivity(new Intent(MainActivity.this, FilesActivity.class));
-                            finish();
+                            openFilesAct();
                         } else {
                             Toast.makeText(MainActivity.this, "Se le envió un correo para verificar su cuenta", Toast.LENGTH_SHORT).show();
                             currentUser.sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -92,6 +95,29 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+
+    }
+
+    public void openFilesAct() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        DocumentReference docRef = db.collection("users").document(currentUser.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (!document.exists()) {
+                        Users user = new Users(currentUser.getDisplayName(),"Free",26214400,0); //26214400 - 25MB
+                        docRef.set(user);
+                    }
+                } else {
+                    Log.d("debugeo", "get failed with ", task.getException());
+                }
+            }
+        });
+        startActivity(new Intent(MainActivity.this, FilesActivity.class));
+        finish();
 
     }
 }
