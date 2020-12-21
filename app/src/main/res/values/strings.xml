@@ -2,4 +2,7 @@
     <string name="app_name">FireBox</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="todo">TODO</string>
+    <string name="firebox">FireBox</string>
+    <string name="inicia_sesi_n">Inicia Sesión</string>
 </resources>
