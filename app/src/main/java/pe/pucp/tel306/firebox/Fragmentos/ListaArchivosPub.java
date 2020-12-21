@@ -16,20 +16,23 @@ import java.util.ArrayList;
 import pe.pucp.tel306.firebox.Clases.Files;
 import pe.pucp.tel306.firebox.R;
 import pe.pucp.tel306.firebox.RecyclerFilesAdapter;
+import pe.pucp.tel306.firebox.RecyclerPrivateFilesAdapter;
 
 public class ListaArchivosPub extends Fragment {
     private static ArrayList<Files> lista=new ArrayList<>();
     private static Context contexto;
+    private static Boolean isPrivate;
 
 
     public ListaArchivosPub() {
         // Required empty public constructor
     }
 
-    public static ListaArchivosPub newInstance(ArrayList<Files> l, Context c) {
+    public static ListaArchivosPub newInstance(ArrayList<Files> l, Context c,Boolean isP) {
         ListaArchivosPub fragment = new ListaArchivosPub();
         lista = l;
         contexto = c;
+        isPrivate = isP;
         return fragment;
     }
 
@@ -43,13 +46,16 @@ public class ListaArchivosPub extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_lista_archivos, container, false);
-        RecyclerFilesAdapter adapter = new RecyclerFilesAdapter(lista, contexto);
         RecyclerView rView = view.findViewById(R.id.listRecyclerView);
-        rView.setAdapter(adapter);
+        if (!isPrivate){
+            rView.setAdapter(new RecyclerFilesAdapter(lista, contexto));
+        }else{
+            rView.setAdapter(new RecyclerPrivateFilesAdapter(lista, contexto));
+        }
+
+
+
         rView.setLayoutManager(new LinearLayoutManager(contexto));
         return view;
-
-
-
     }
 }
