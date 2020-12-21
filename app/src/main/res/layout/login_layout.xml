@@ -15,7 +15,8 @@
         app:layout_constraintStart_toStartOf="@+id/buttonCorreo"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.437"
-        app:srcCompat="@drawable/firebox" />
+        app:srcCompat="@drawable/firebox"
+        android:contentDescription="@string/todo" />
 
     <Button
         android:id="@+id/buttonCorreo"
@@ -23,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="132dp"
-        android:text="Inicia sesión con correo"
+        android:text="@string/inicia_sesi_n_con_correo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
@@ -34,7 +35,7 @@
         style="@style/miBoton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Inicia sesión con Google"
+        android:text="@string/inicia_sesi_n_con_google"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/buttonCorreo"
         app:layout_constraintHorizontal_bias="0.0"

@@ -5,4 +5,7 @@
     <string name="todo">TODO</string>
     <string name="firebox">FireBox</string>
     <string name="inicia_sesi_n">Inicia Sesión</string>
+    <string name="inicia_sesi_n_con_correo">Inicia sesión con correo</string>
+    <string name="inicia_sesi_n_con_google">Inicia sesión con Google</string>
+    <string name="todo">TODO</string>
 </resources>
