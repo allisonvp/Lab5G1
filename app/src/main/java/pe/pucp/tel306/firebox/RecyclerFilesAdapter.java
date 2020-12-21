@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -20,6 +21,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import pe.pucp.tel306.firebox.Clases.CustomDialog;
 import pe.pucp.tel306.firebox.Clases.Files;
 
 public class RecyclerFilesAdapter extends RecyclerView.Adapter<RecyclerFilesAdapter.FilesViewHolder> {
@@ -57,8 +59,7 @@ public class RecyclerFilesAdapter extends RecyclerView.Adapter<RecyclerFilesAdap
         holder.button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    /////DIALOG
-
+                CustomDialog customDialog = new CustomDialog();
             }
         });
     }

@@ -60,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    public void openDialog(View view){
+
+
+    }
+
     public void login(View view) {
         List<AuthUI.IdpConfig> proveedores = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build(),
