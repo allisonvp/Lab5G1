@@ -82,7 +82,7 @@ public class FilesActivity extends AppCompatActivity {
             TextView textViewBienvenido = findViewById(R.id.textViewBienvenido);
             textViewBienvenido.setText("Bienvenido " + displayName);
         }
-        openfilesFragment();
+        openfilesFragment(null);
 
         setFloatingButton();
     }
@@ -93,7 +93,7 @@ public class FilesActivity extends AppCompatActivity {
         return true;
     }
 
-    public void openfilesFragment() {
+    public void openfilesFragment(View view) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -115,7 +115,41 @@ public class FilesActivity extends AppCompatActivity {
                                         .remove(fragment)
                                         .commit();
                             }
-                            ListaArchivosPub listFragment = ListaArchivosPub.newInstance(lista, FilesActivity.this);
+                            ListaArchivosPub listFragment = ListaArchivosPub.newInstance(lista, FilesActivity.this,false);
+                            getSupportFragmentManager().beginTransaction()
+                                    .add(R.id.id_fragment_files, listFragment)
+                                    .commit();
+
+                        } else {
+                            Log.d("debugeo", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+    }
+    public void openPrivateFilesFragment(View view) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(currentUser.getUid()).collection("privatefiles")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Files> lista = new ArrayList<>();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Files file = document.toObject(Files.class);
+                                lista.add(file);
+                            }
+                            FragmentManager fm = getSupportFragmentManager();
+                            Fragment fragment = fm.findFragmentById(R.id.id_fragment_files);
+                            if (fragment != null) {
+                                fm.beginTransaction()
+                                        .remove(fragment)
+                                        .commit();
+                            }
+                            ListaArchivosPub listFragment = ListaArchivosPub.newInstance(lista, FilesActivity.this,true);
                             getSupportFragmentManager().beginTransaction()
                                     .add(R.id.id_fragment_files, listFragment)
                                     .commit();
@@ -281,7 +315,7 @@ public class FilesActivity extends AppCompatActivity {
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                     LocalDateTime now = LocalDateTime.now();
                     docRef.set(new Files(getFileName(uri), getFileSize(uri), currentUser.getUid() + "/" + getFileName(uri),dtf.format(now)));
-                    openfilesFragment();
+                    openfilesFragment(null);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

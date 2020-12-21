@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -64,9 +65,18 @@ public class MainActivity extends AppCompatActivity {
                 new AuthUI.IdpConfig.EmailBuilder().build(),
                 new AuthUI.IdpConfig.GoogleBuilder().build()
         );
+
+        AuthMethodPickerLayout authMethodPickerLayout =
+                new AuthMethodPickerLayout.Builder(R.layout.login_layout)
+                .setEmailButtonId(R.id.buttonCorreo)
+                .setGoogleButtonId(R.id.buttonGoogle)
+                .build();
+
         AuthUI instance = AuthUI.getInstance();
         Intent intent = instance
                 .createSignInIntentBuilder()
+                .setTheme(R.style.miTema)
+                .setAuthMethodPickerLayout(authMethodPickerLayout)
                 .setAvailableProviders(proveedores)
                 .build();
         startActivityForResult(intent, 1);

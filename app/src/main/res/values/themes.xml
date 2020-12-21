@@ -13,5 +13,12 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
-    <style name="miTema" parent="Theme.MaterialComponents.Light.DarkActionBar"></style>
+    <style name="miTema" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="shapeAppearanceOverlay">@style/botonParticular</item>
+    </style>
+    <style name="miBoton" parent="Widget.MaterialComponents.Button.OutlinedButton"></style>
+    <style name="botonParticular">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+    </style>
 </resources>
